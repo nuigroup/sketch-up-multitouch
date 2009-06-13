@@ -1,4 +1,8 @@
-require 'rubygems'
+CLIENT_ROOT = File.join( File.dirname( __FILE__ ), "client" )
+
+# adding lib folder to ruby path
+$: << File.join( CLIENT_ROOT, "lib" )
+
 require 'tuio_client'
 
 
