@@ -9,6 +9,7 @@
    
 require 'sketchup.rb'
 require 'extensions.rb'
+#require 'sketchupmt.dll'
 	 
 	 
 	 $sketchupmt_toolbar=UI::Toolbar.new "Multitouch"  #New Toolbar (Works)
