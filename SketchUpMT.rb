@@ -1,15 +1,17 @@
    
-     
+   =begin Create an entry in the SketchUp Extension
+   list that loads a script called tuioconn.rb.
+   @SkSocket.in
+   =end
 
 
 
-  # Create an entry in the SketchUp Extension list that loads a script called
-  # tuioconn.rb.
+   
 require 'sketchup.rb'
 require 'extensions.rb'
 	 
 	 
-	 $sketchupmt_toolbar=UI::Toolbar.new "Multitouch"  #j9
+	 $sketchupmt_toolbar=UI::Toolbar.new "Multitouch"  #New Toolbar (Works)
 	 
 	
 	 
@@ -20,7 +22,7 @@ require 'extensions.rb'
 	s1.tooltip="Go to the NUIgroup website"
 	$sketchupmt_toolbar.add_item(s1)
 	
-	s2=UI::Command.new("Multitouch Navigation") { UI.openURL("##CHANGE ACTION HERE/#{email}")} #IMPORTANT J908
+	s2=UI::Command.new("Multitouch Navigation") { UI.openURL("##start the camera motion/#{email}")} #IMPORTANT J908
 	s2.small_icon="SketchUpMT/buttonset/orbiting.png"
 	s2.large_icon="SketchUpMT/buttonset/mysmustardiconlarge.png"
 	s2.menu_text="Orbit and Pan"

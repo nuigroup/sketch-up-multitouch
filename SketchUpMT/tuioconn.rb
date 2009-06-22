@@ -1,3 +1,20 @@
+=begin def stop
+   SKSocket.disconnect
+   $out.flush
+   $out.close
+   
+   puts 'Receiving Data'
+ end
+   =end
+
+
+
+ 
+
+
+
+
+
 # debug
 # puts TUIO_ROOT
 
@@ -77,10 +94,4 @@ UI.menu( "PlugIns" ).add_item( "MultiTouch Animation" ) {
 }
 
 
-# def stop
-#   SKSocket.disconnect
-#   $out.flush
-#   $out.close
-#   
-#   puts 'Receiving Data'
-# end
+

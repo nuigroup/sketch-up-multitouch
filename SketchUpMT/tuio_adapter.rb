@@ -1,3 +1,4 @@
+# do not resort to this soln until event relay or DRb solution works
 CLIENT_ROOT = File.join( File.dirname( __FILE__ ), "client" )
 
 # adding lib folder to ruby path
@@ -19,3 +20,5 @@ end
 @tc.start
 
 sleep
+
+
