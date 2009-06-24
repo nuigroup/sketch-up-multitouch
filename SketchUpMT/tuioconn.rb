@@ -1,15 +1,16 @@
-=begin def stop
-   SKSocket.disconnect
-   $out.flush
-   $out.close
+
+  # SKSocket.disconnect
+  # $out.flush
+  # $out.close
    
-   puts 'Receiving Data'
- end
-   =end
+ #  puts 'Receiving Data'
+# end
+   
 
 
 
- 
+# Show the Ruby Console at startup so we can see any programming errors we may make.
+Sketchup.send_action "showRubyPanel:"
 
 
 
@@ -88,7 +89,7 @@ class MultiTouchAnimation
     return true
   end
 end
-
+   # This adds an item to the Camera menu to activate our custom animation.
 UI.menu( "PlugIns" ).add_item( "MultiTouch Animation" ) {
   Sketchup.active_model.active_view.animation = MultiTouchAnimation.new
 }
