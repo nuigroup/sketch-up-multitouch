@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="TUIO_CPP">
+</Property><Property Name="Solution File" Value="C:\Documents and Settings\Vikash\Desktop\TUIO_CPP-1.4\TUIO_CPP\TUIO_CPP.sln">
+</Property><Property Name="Date" Value="Tuesday, June 23, 2009">
+</Property><Property Name="Time" Value="23:42 PM">
+</Property></Properties><Event ErrorLevel="0" Project="TuioDump" Source="TuioDump.vcproj" Description="Web deployment to the local IIS server is no longer supported. The Web Deployment build tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="TuioDump" Source="TuioDump.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="TuioDump" Source="TuioDump.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="TuioDump" Source="TuioDump.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="TuioDemo" Source="TuioDemo.vcproj" Description="Web deployment to the local IIS server is no longer supported. The Web Deployment build tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="TuioDemo" Source="TuioDemo.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="TuioDemo" Source="TuioDemo.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="TuioDemo" Source="TuioDemo.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="libTUIO" Source="libTUIO.vcproj" Description="Web deployment to the local IIS server is no longer supported. The Web Deployment build tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="libTUIO" Source="libTUIO.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="libTUIO" Source="libTUIO.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="libTUIO" Source="libTUIO.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="SimpleSimulator" Source="SimpleSimulator.vcproj" Description="Web deployment to the local IIS server is no longer supported. The Web Deployment build tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="SimpleSimulator" Source="SimpleSimulator.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="SimpleSimulator" Source="SimpleSimulator.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="SimpleSimulator" Source="SimpleSimulator.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="TUIO_CPP.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="TUIO_CPP.sln" Description="Converted">
+</Event></UpgradeLog>
