@@ -1,3 +1,6 @@
+
+
+# MAKE THE MULTITOUCH EXTENSION LOADABLE THROUGH THIS FILE, EXTENSION COULD BE ENABLED/DISABLED FROM THE TOOLBAR
    
    =begin Create an entry in the SketchUp Extension
    list that loads a script called tuioconn.rb.
@@ -9,7 +12,7 @@
    
 require 'sketchup.rb'
 require 'extensions.rb'
-#require 'sketchupmt.dll'
+#require 'SketchUpMT.dll'
 	 
 	 
 	 $sketchupmt_toolbar=UI::Toolbar.new "Multitouch"  #New Toolbar (Works)

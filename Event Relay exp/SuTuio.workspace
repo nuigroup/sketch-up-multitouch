@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<CodeBlocks_workspace_file>
-	<Workspace title="SuTuio_Workspace">
-		<Project filename="TUIO_CPP\TuioDump.cbp" active="1" />
-		<Project filename="TUIO_CPP\libTUIO.cbp" />
-		<Project filename="TUIO_CPP\SimpleSimulator.cbp" />
-		<Project filename="TUIO_CPP\TuioDemo.cbp" />
-	</Workspace>
-</CodeBlocks_workspace_file>
