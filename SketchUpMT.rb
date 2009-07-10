@@ -1,7 +1,11 @@
+<<<<<<< .mine
+# MAKE THE MULTITOUCH EXTENSION LOADABLE THROUGH THIS FILE, EXTENSION COULD BE ENABLED/DISABLED FROM THE TOOLBAR   
+=======
 
 
 # MAKE THE MULTITOUCH EXTENSION LOADABLE THROUGH THIS FILE, EXTENSION COULD BE ENABLED/DISABLED FROM THE TOOLBAR
    
+>>>>>>> .r32
    =begin Create an entry in the SketchUp Extension
    list that loads a script called tuioconn.rb.
    @SkSocket.in
@@ -12,7 +16,11 @@
    
 require 'sketchup.rb'
 require 'extensions.rb'
+<<<<<<< .mine
+#require 'sketchUpMT.dll'
+=======
 #require 'SketchUpMT.dll'
+>>>>>>> .r32
 	 
 	 
 	 $sketchupmt_toolbar=UI::Toolbar.new "Multitouch"  #New Toolbar (Works)
