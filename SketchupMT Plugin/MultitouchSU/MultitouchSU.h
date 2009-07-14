@@ -1,7 +1,3 @@
-/***************************************************************
-Credits:Event Relay and MultitouchSU
-License devs ToBeDone
-*/
 
 #include "wx/wx.h"
 //#include "wx/evtloop.h"
@@ -41,6 +37,8 @@ class MultitouchSUApp : public wxApp
         UINT ScanCodeToVirtualKey(UINT scanCode);
         wxString GetMSWndMenuLabel(const unsigned menuId);
         bool CreateDebuggingLog();
+
+        bool SubClassMainWindow(LPVOID);
 
         wxString m_charMouseEventType;
 

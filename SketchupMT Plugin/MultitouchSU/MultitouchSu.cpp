@@ -1,6 +1,20 @@
-/***************************************************************
-Credits:Event Relay and MultitouchSU
-License devs ToBeDone
+/*
+        This file is part of MultitouchSU, an extension for SketchUp
+
+        This program is free software; you can redistribute it and/or
+        modify it under the terms of the GNU General Public License
+        as published by the Free Software Foundation; either version 2
+        of the License, or (at your option) any later version.
+
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
+
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
 
 // ----------------------------------------------------------------------------
 // Changes to Ruby config.h to compile with MINGW32 compiler
@@ -49,6 +63,8 @@ HWND    g_hWndSketchUp = 0;                 //handle of SketchUp window
 HWND    g_hWndSketchUpView = 0;             //handle of SketchUp View subwindow
 HWND    g_hWndSketchUpStatusBar = 0;          //handle of SketchUp StatusBar
 DWORD   g_dwCurrentProcessId = 0;           //PID of SketchUp process
+LONG    OldWndProc = 0;                     //Main windoww proc that we subclassed
+wxString g_wxStringMsg;                     // global string storage
 
 // ----------------------------------------------------------------------------
 //  pointers to instantiations of classes used by Dll
@@ -63,8 +79,8 @@ wxLog*          pOldLog = 0;            //log to restore on exit
 Debugging*      pVersion = 0;           //access to version string
 
     int port = 3333;
-	TuioDump dump;
-	TuioClient client(port);
+        TuioDump dump;
+        TuioClient client(port);
 
 // ----------------------------------------------------------------------------
 // We use IMPLEMENT_APP_NO_MAIN so we can start the app from DllMain
@@ -72,12 +88,12 @@ Debugging*      pVersion = 0;           //access to version string
 //
     IMPLEMENT_APP_NO_MAIN(MultitouchSUApp)
     // ----------------------------------------------------------------------------
-    //  Events intercept table
+    //  Events intercept table not used
     // ----------------------------------------------------------------------------
-//    BEGIN_EVENT_TABLE(MultitouchSUApp, wxApp)
-//            //EVT_BUTTON(123,MultitouchSUApp::OnButton) //testing only
-//            //EVT_CLOSE(MyEvents::OnClose) unused; CB wizard generated
-//    END_EVENT_TABLE()
+    //    BEGIN_EVENT_TABLE(MultitouchSUApp, wxApp)
+    //            //EVT_BUTTON(123,MultitouchSUApp::OnButton) //testing only
+    //            //EVT_CLOSE(MyEvents::OnClose) unused; CB wizard generated
+    //    END_EVENT_TABLE()
 
 // ----------------------------------------------------------------------------
 //  DllMain
@@ -178,6 +194,7 @@ extern "C" DLLFUNCTIONS_API void Init_MultitouchSU(void)
     // (Ruby calls it an extension).
     // as.../SketchUp/Plugins/MultitouchSU.dll
 
+
     // A simple MultitouchSU.rb contains a 'require "MultitouchSU.dll"' statement
 
     // This function is invoked *after* DLL initialization DLL_PROCESS_ATTACH
@@ -192,7 +209,6 @@ extern "C" DLLFUNCTIONS_API void Init_MultitouchSU(void)
     // Set some globals needed by the RubyClassHandler
     MultitouchSUApp::pRubyClassHandler = new RubyClassHandler;
 
-    MultitouchSUApp::pRubyClassHandler->SetHiddenFrame( (HiddenFrame*)pHiddenFrame );
     ((HiddenFrame*)pHiddenFrame)->SetRubyClassHandler(MultitouchSUApp::pRubyClassHandler);
 
     if(MultitouchSUApp::pRubyClassHandler)
@@ -254,21 +270,30 @@ bool MultitouchSUApp::DllProcessAttach()
     else
         pVersion = new Debugging("NoLogging");
 
-    // Find main program window and subclass it. We want to see windows
+    // Find main program window and subclass it. We want to see user
     // events before SketchUp does.
-    // Hook the keyboard and mouse to get raw events
+    if (SubClassMainWindow(0))
+    {
+            #if defined(LOGGING)
+            LOGIT( _T("MultitouchSu Hooking & Creation of SubClassing Done."));
+            #endif
+    }
+    else
+    {
+        MessageBox( 0, "MultitouchSu:Creation of SubClassing failed", "MultitouchSu", MB_OK);
+        return false;
+    }
+
     if (FindSuMainWindow())
     {
 
-    // Startup TUIO client to listen for touch data
+        // Startup TUIO client to listen for touch data
 
-    //int port = 3333;
-	//TuioDump dump;
-	//TuioClient client(port);
-	client.addTuioListener(&dump);
-	client.connect(false); //non-blocking connection
-
-
+        //int port = 3333;
+        //TuioDump dump;
+        //TuioClient client(port);
+        client.addTuioListener(&dump);
+        client.connect(false); //non-blocking connection
         return true;
     }
 
@@ -276,6 +301,54 @@ bool MultitouchSUApp::DllProcessAttach()
     return false;
 
 }
+// ----------------------------------------------------------------------------
+LRESULT CALLBACK NewWndProc(HWND Hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+// ----------------------------------------------------------------------------
+{
+    // This is the windows message loop that gets to see WM_messages
+    // just before SketchUp does.
+
+    LRESULT rc = 0;
+
+    // Writing to the log here during our initialization causes crashes
+    if (g_DllIsInitialized < 2)
+         goto ContinueProcessing;
+
+    switch(message)
+    {
+        case WM_USER+0x8001:
+        {
+            rc = true;
+            if( MultitouchSUApp::pRubyClassHandler )
+                MultitouchSUApp::pRubyClassHandler->Call_Ruby_OnTuioDataMethod(g_wxStringMsg);
+            break;
+        }
+        default: break;
+    }//switch
+
+    if (rc)
+    {
+        #if defined(LOGGING)
+        LOGIT( _T("NewWndProc PROCCESSED[%s]"), g_wxStringMsg.c_str());
+        #endif
+        return true; //message was processed
+    }
+
+    ContinueProcessing: // Pass the message onto SketchUp
+    return CallWindowProc((WNDPROC)OldWndProc, Hwnd, message, wParam, lParam);
+}
+    //Doc: WM_COMMAND
+    //  Message     wParam      wParam                          lParam
+    //  Source      high word)  (low word)
+    //  ---------   ----------  -----------------------         -------------
+    //  Menu        0           Menu identifier (IDM_*)         0
+    //  Accelerator     1               Accelerator identifier (IDM_*)  0
+    //  Control     Control-    Control                         Handle to the
+    //              defined     identifier                      control window
+    //              notification
+    //              code
+
+
 // ----------------------------------------------------------------------------
 BOOL CALLBACK MultitouchSUApp::EnumWindowsProc( HWND hWnd, LPARAM lParam)
 // ----------------------------------------------------------------------------
@@ -323,6 +396,7 @@ BOOL CALLBACK MultitouchSUApp::EnumChildWindowsProc( HWND hWnd, LPARAM lParam)
     // Find the first child window w/class AfxFrameOrView. This
     // will be the users drawing window and the one needed to
     // translate screen coordinates to client coordinates.
+
 
     // Look for a window with class name in g_lpszClassToFind.
     // It must share our Pid, ie., be in the same process as this
@@ -388,6 +462,33 @@ bool MultitouchSUApp::FindSuMainWindow()
     return TRUE;
 }
 // ----------------------------------------------------------------------------
+bool MultitouchSUApp::SubClassMainWindow(LPVOID)
+// ----------------------------------------------------------------------------
+{
+
+    // Place our MS message loop ahead of the SketchUp window so we get
+    // to see the window messages before SketchUp does.
+
+    // Get our pid to match against enumerated windows (in case of multiple same named wins)
+    g_dwCurrentProcessId = GetCurrentProcessId();
+    EnumWindows( EnumWindowsProc, 0);
+    HWND hWnd = g_hWndSketchUp;
+    if (not hWnd)
+    {
+        wxMessageBox(wxString::Format(_T("MultitouchSu:Failed to locate %s"), g_lpszTitleToFind));
+        return FALSE;
+    }
+
+    //subclass the original window procedure with our new one
+    ::EnableWindow(hWnd, false);
+    OldWndProc = SetWindowLong(hWnd, GWL_WNDPROC, (long)NewWndProc);
+    ::EnableWindow(hWnd, true);
+
+     //Now all messages sent to the original pgms window, are sent to
+     // OUR window proc first.
+    return TRUE;
+}
+// ----------------------------------------------------------------------------
 wxWindow* MultitouchSUApp::CreateHiddenFrame()
 // ----------------------------------------------------------------------------
 {
@@ -401,7 +502,7 @@ wxWindow* MultitouchSUApp::CreateHiddenFrame()
         return 0;
     }
 
-	return pHiddenFrame;
+        return pHiddenFrame;
 }
 // ----------------------------------------------------------------------------
 bool MultitouchSUApp::CreateDebuggingLog()
@@ -414,9 +515,9 @@ bool MultitouchSUApp::CreateDebuggingLog()
     pMyLog = new Debugging(_T("MultitouchSU Dll Log"));
     #if defined(LOGGING)
       LOGIT( "DLL Debug Logging initialized.");
-	#endif
+        #endif
 
-	return TRUE;
+        return TRUE;
 }
 //// ----------------------------------------------------------------------------
 //UINT MultitouchSUApp::PostWxEvent( const UINT Message, const WPARAM wParam, const LPARAM lParam)
@@ -562,6 +663,7 @@ wxString MultitouchSUApp::GetMSWndMenuLabel(const unsigned menuId)
 // ----------------------------------------------------------------------------
 {
     // Get label from MS window menu item (not wxWindow menu)
+
 
     wxString menuLabel("");
     HMENU hMenu = GetMenu(g_hWndSketchUp);
