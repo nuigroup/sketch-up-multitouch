@@ -15,13 +15,45 @@
             super();         # <== initialize the Ruby TuioClient extension
         end
         # ----------------------------------
-        #       OnTuioData (called by TuioClient when TUIO data is available)
+        #	OnTuioData (called by TuioClient when TUIO data is available)
         # ----------------------------------
-        def OnTuioData( stringOfTuioData )
+        #def OnTuioData( stringOfTuioData )
             ##Logit "FROM RUBY OnTuioData: #{stringOfTuioData}"
-            puts stringOfTuioData; #write to SketchUp console
+            #puts stringOfTuioData; #write to SketchUp console
+            #return true
+        #end
+
+        def OnTuioAddObject( symbolID, sessionID, positionX, positionY, angle)
+            puts "AddObject: #{symbolID} #{sessionID} #{positionX} #{positionY} #{angle}"
+            return true
+        end;
+
+        def OnTuioSetObject( symbolID, sessionID, positionX, positionY, angle,
+                motionSpeed, rotationSpeed, motionAccel, rotationAccel)
+            puts "SetObject: #{symbolID} #{sessionID} #{positionX} #{positionY} #{angle} #{motionSpeed} #{rotationSpeed} #{motionAccel} #{rotationAccel}"
+            return true
+        end;
+
+        def OnTuioDelObject( symbolID, sessionID)
+            puts "DelObject: #{symbolID} #{sessionID}";
+            return true
+        end;
+
+        def OnTuioAddCursor( symbolID, sessionID, positionX, positionY )
+            puts "AddCursor: #{symbolID} #{sessionID} #{positionX} #{positionY}"
             return true
         end
+
+        def OnTuioSetCursor( symbolID, sessionID, positionX, positionY, motionSpeed, motionAccel )
+            puts "SetCursor: #{symbolID} #{sessionID} #{positionX} #{positionY} #{motionSpeed} #{motionAccel}"
+            return true
+        end
+
+        def OnTuioDelCursor( symbolID, sessionID)
+            puts "DelCursor: #{symbolID} #{sessionID}";
+            return true
+        end
+
     end # class MyTuioClient
 
     #end of script
