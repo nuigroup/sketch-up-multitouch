@@ -1,24 +1,25 @@
+****************************************************
+//Google Summer of Code 2009 project//
+Mentor: Pawel Solyga
+Co-mentor: Taha Bintahir
+Student Dev: Anirudh Sharma
+Community: Natural User Inter group www.nuigroup.com
+**************************************************** 
 
-											****************************************************
-													   Google Summer of Code 2009 project
-															Mentor: Pawel Solyga
-															Co-mentor: Taha Bintahir
-															Student Dev: Anirudh Sharma
-											Community: Natural User Inter group www.nuigroup.com
-											**************************************************** 
-
--The extension upon completion will allow Multitouch interactions into the SketchUp UI. Users having access to TUIO based multitouch hardware
-would be able to interact/ Draw stuff into Google SketchUp using gestures.
+-The extension upon completion will allow Multitouch interactions into the SketchUp UI. 
+Users having access to TUIO based multitouch hardwarewould be able to interact/ Draw stuff 
+into Google SketchUp using gestures.
 
 There'll be two main tasks to accomplish
 - Camera Movements (Panning/Orbit/Zoom) using Multitouch two finger gesture
-- Drawing using gestures(We're figuring out how it'll work) since most Google SketchUp interactions are single mouse touch way. 
+- Drawing using gestures(We're figuring out how it'll work) since most Google SketchUp 
+interactions are single mouse touch way. 
 										
 Take a Survey at http://tinyurl.com/no7axe and let your suggestions coming in 
 									        
 Current Status: The TUIO data is received within the SketchUp User interface.
-Bugs: The Stack size of Console makes GoogleSU crash on receiving the TUIO messages, so we'll use an builtin window using a DLL that displays and logs
-the receives messages
+Bugs: The Stack size of Console makes GoogleSU crash on receiving the TUIO messages, 
+so we'll use an builtin window using a DLL that displays and logs the receives messages
 
 ************************
 CURRENT STATUS            //Tasks Completed
@@ -27,10 +28,10 @@ CURRENT STATUS            //Tasks Completed
 -TUIO connection done
 -TUIO logging done
 -UI, IconSet loading from toolbar
+
 ************************
-REAMINING TASK               //To be done by END of August, - priority 1: Currently trying Ruby API camera methods, priority 2: try the Mouse emulation
+REAMINING TASK               //To be done by END of August, - priority 1: Currently trying Ruby API camera methods, 
+							  priority 2: try the Mouse emulation
 ************************
 - Gestures mapping(Pan, Zoom, Orbit:: Line, Circle, Square::Push Pull objects) -> Hard
 - Mapping each Iconset to Multitouch Methods -> Easy
-
-
