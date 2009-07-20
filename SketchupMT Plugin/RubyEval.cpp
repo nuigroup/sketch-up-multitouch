@@ -19,6 +19,7 @@
 //
 //    Pirmin Kalberer <pka@sourcepole.ch>
 //    http://www.sourcepole.ch/sources/software/c++ruby/
+//    http://www.sourcepole.ch/2004/1/21/embedding-ruby-in-c
 // ----------------------------------------------------------------------------
 /* $Id: rubyeval.h,v 1.6 2002/12/13 20:25:11 pi Exp $
  *
@@ -250,8 +251,8 @@ void RubyEval::exception_print(ostream& errout)
         }
     }//if
     errout.flush();
-    // Need pointer to EventRealyTestFrame -> m_pLogging->Flush();
-    Debugging::pLog->Flush();
+    // Need pointer to EventRelayTestFrame -> m_pLogging->Flush();
+    if (Debugging::pLog) Debugging::pLog->Flush();
 }
 // ----------------------------------------------------------------------------
 VALUE RubyEval::eval(const char* code)
