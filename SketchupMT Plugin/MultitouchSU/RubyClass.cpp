@@ -10,14 +10,17 @@
 
 #include "commctrl.h"
 #include "ruby.h"
+#include "MtSuGlobals.h"
 //#include "intern.h"
 
- extern HWND         g_hWndSketchUp;            //handle of SketchUp window
- extern HWND         g_hWndSketchUpView;        //graphics view window
- extern HWND         g_hWndSketchUpStatusBar;   //handle of SketchUp StatusBar
- extern HMENU        g_MenuActiveHandle;        //handle of active menu or zero
+// moved to MtSuGlobals.h
+// extern HWND         g_hWndSketchUp;            //handle of SketchUp window
+// extern HWND         g_hWndSketchUpView;        //graphics view window
+// extern HWND         g_hWndSketchUpStatusBar;   //handle of SketchUp StatusBar
+// extern HMENU        g_MenuActiveHandle;        //handle of active menu or zero
+// extern HiddenFrame* pHiddenFrame;              //wxFrame
+
  extern Debugging*   pVersion;                  //Debugging class
- extern HiddenFrame* pHiddenFrame;              //wxFrame
 
 #define MAPVK_VK_TO_VSC 0
 #define MAPVK_VSC_TO_VK 1
@@ -32,7 +35,6 @@
 // ----------------------------------------------------------------------------
 //      VALUE initialize(VALUE self)
 //      VALUE Logit(VALUE self, VALUE stringToLog)
-//      VALUE SendKeyMacro(VALUE self, VALUE rMacroString) See notes at bottom
 //      VALUE GetMousePosition(VALUE self)
 //              returns array of [x, y]
 // ----------------------------------------------------------------------------
@@ -69,12 +71,15 @@ RubyClassHandler::RubyClassHandler()
     rb_define_method(m_rubyClass, "initialize", (ruby_method*)&Initialize, 0);
 
     //*Testing* routines
-    // we call OnTuioData, user should not call it
+    // This code calls OnTuioData, user should not call it
     //-rb_define_method(m_rubyClass, "OnTuioData", (ruby_method*)&OnTuioData, 1);
 
     // called by Ruby script .rb
     rb_define_method(m_rubyClass, "Logit", (ruby_method*)&Logit, 1);
     rb_define_method(m_rubyClass, "GetMousePosition", (ruby_method*)&GetMousePosition, 0);
+    rb_define_method(m_rubyClass, "GetDisplaySize", (ruby_method*)&GetDisplaySize, 0);
+    rb_define_method(m_rubyClass, "GetSketchUpRect", (ruby_method*)&GetSketchUpRect, 0);
+    rb_define_method(m_rubyClass, "GetSketchUpViewRect", (ruby_method*)&GetSketchUpViewRect, 0);
     rb_define_method(m_rubyClass, "SendKeyMacro", (ruby_method*)&SendKeyMacro, 1);
     //rb_define_method(m_rubyClass, "TimerStart", (ruby_method*)&TimerStart,1);
     //rb_define_method(m_rubyClass, "TimerStop", (ruby_method*)&TimerStop,0);
@@ -203,7 +208,117 @@ VALUE RubyClassHandler::rbpMethodExists( VALUE self)
     return Qfalse;
 }
 // ----------------------------------------------------------------------------
-bool RubyClassHandler::Call_Ruby_OnTuioDataMethod( wxString& tuioDataString )
+bool RubyClassHandler::Call_Ruby_OnTuioData( struct structMtSuTuioData& tuioData )
+// ----------------------------------------------------------------------------
+{
+    // Called from windows message loop
+
+    // Stow accessible parms for static methods
+    // and do a rb_protect call to appropriate Ruby OnTuioData method
+    // for each Ruby TuioClient object in our array
+
+    VALUE suppressData = 0;
+    int status = false;
+    m_pMtSuTuioData = &tuioData;
+    wxString methodToCall = tuioData.packetMsg.Mid(0,7);
+
+    if ( methodToCall.Matches(_T("add obj")) )
+        methodToCall = _T("AddObject");
+    else
+    if ( methodToCall.Matches(_T("set obj")) )
+        methodToCall = _T("SetObject");
+    else
+    if ( methodToCall.Matches(_T("del obj")) )
+        methodToCall = _T("DelObject");
+    else
+    if ( methodToCall.Matches(_T("add cur")) )
+        methodToCall = _T("AddCursor");
+    else
+    if ( methodToCall.Matches(_T("set cur")) )
+        methodToCall = _T("SetCursor");
+    else
+    if ( methodToCall.Matches(_T("del cur")) )
+        methodToCall = _T("DelCursor");
+    else
+    return 0;
+
+    // Set parms in this obj that are needed in static funcs
+    // so it can be read with a global 'This' pointer
+    m_TuioDataMethodToCall = _T("OnTuio") + methodToCall;
+
+
+    // Call each Ruby TuioClient object having the OnTuioData method instantiated
+    int count = GetRubyObjCount();
+    for (int i=0; i<count; ++i )
+    {
+        VALUE tuioClientObj = GetRubyObj(i);
+
+        if ( MethodExists(tuioClientObj, _T("OnTuio")+methodToCall) )
+        {
+            #if defined(LOGGING)
+            //LOGIT( "RubyClassHandler::CallRubyOnTuioData type[%s]", methodToCall.c_str());
+            #endif
+
+            // protect ourselves from Ruby exception throwing
+            VALUE rc = rb_protect ( &rbpOnTuioDataMethod, tuioClientObj, &status);
+            if ( status ) ShowRubyError( status );
+            // Did anyone suppress the data?
+            if ( (not status) && rc) suppressData = true;
+        }
+    }
+    return (bool)suppressData;
+}
+// ----------------------------------------------------------------------------
+VALUE RubyClassHandler::rbpOnTuioDataMethod(VALUE eventRelayObj) //Ruby protected
+// ----------------------------------------------------------------------------
+{//static called from Ruby
+
+    // rb_protect'ed call to Ruby script OnTuio methods
+
+    VALUE rc = 0;
+    wxString rubyMethod = This->m_TuioDataMethodToCall;
+    struct structMtSuTuioData* pTuioData = This->m_pMtSuTuioData;
+
+    VALUE sessionID     = INT2FIX(pTuioData->sessionID);
+    VALUE symbolID      = INT2FIX(pTuioData->symbolID);
+    VALUE positionX     = rb_float_new(pTuioData->positionX);
+    VALUE positionY     = rb_float_new(pTuioData->positionY);
+    VALUE angle         = rb_float_new(pTuioData->angle);
+    VALUE motionSpeed   = rb_float_new(pTuioData->motionSpeed);
+    VALUE rotationSpeed = rb_float_new(pTuioData->rotationSpeed);
+    VALUE motionAccel   = rb_float_new(pTuioData->motionAccel);
+    VALUE rotationAccel = rb_float_new(pTuioData->rotationAccel);
+
+    if (rubyMethod.Matches(_T("OnTuioAddObject"))  )
+        rc = rb_funcall(eventRelayObj, rb_intern(rubyMethod.c_str()), 5,
+            symbolID, sessionID, positionX, positionY, angle);
+    else
+    if (rubyMethod.Matches(_T("OnTuioSetObject"))  )
+        rc = rb_funcall(eventRelayObj, rb_intern(rubyMethod.c_str()), 9,
+            symbolID, sessionID, positionX, positionY, angle,
+            motionSpeed, rotationSpeed, motionAccel, rotationAccel);
+    else
+    if (rubyMethod.Matches(_T("OnTuioDelObject"))  )
+        rc = rb_funcall(eventRelayObj, rb_intern(rubyMethod.c_str()), 2,
+            symbolID, sessionID);
+    else
+    if (rubyMethod.Matches(_T("OnTuioAddCursor"))  )
+        rc = rb_funcall(eventRelayObj, rb_intern(rubyMethod.c_str()), 4,
+            symbolID, sessionID, positionX, positionY);
+    else
+    if (rubyMethod.Matches(_T("OnTuioSetCursor"))  )
+        rc = rb_funcall(eventRelayObj, rb_intern(rubyMethod.c_str()), 6,
+            symbolID, sessionID, positionX, positionY,
+            motionSpeed, motionAccel);
+    else
+    if (rubyMethod.Matches(_T("OnTuioDelCursor"))  )
+        rc = rb_funcall(eventRelayObj, rb_intern(rubyMethod.c_str()), 2,
+            symbolID, sessionID);
+
+    return rc;
+}
+// ----------------------------------------------------------------------------
+bool RubyClassHandler::Call_Ruby_OnTuioDataString( wxString& tuioDataString )
 // ----------------------------------------------------------------------------
 {
     // Called from our Tuio client data receiver which was called from
@@ -213,7 +328,7 @@ bool RubyClassHandler::Call_Ruby_OnTuioDataMethod( wxString& tuioDataString )
     // and do a rb_protect call to Ruby OnTuioData
     // for each Ruby TuioClient object in our array
 
-    VALUE processedKey = 0;
+    VALUE suppressData = 0;
     int status = false;
 
     // Set parms in this obj so static funcs can read them
@@ -234,16 +349,16 @@ bool RubyClassHandler::Call_Ruby_OnTuioDataMethod( wxString& tuioDataString )
             #endif
 
             // protect ourselves from Ruby exception throwing
-            VALUE rc = rb_protect ( &rbpOnTuioData, tuioClientObj, &status);
+            VALUE rc = rb_protect ( &rbpOnTuioDataString, tuioClientObj, &status);
             if ( status ) ShowRubyError( status );
-            // Did anyone eat the key?
-            if ( (not status) && rc) processedKey = true;
+            // Did anyone suppress the data?
+            if ( (not status) && rc) suppressData = true;
         }
     }
-    return (bool)processedKey;
+    return (bool)suppressData;
 }
 // ----------------------------------------------------------------------------
-VALUE RubyClassHandler::rbpOnTuioData(VALUE tuioClientObj) //Ruby protected
+VALUE RubyClassHandler::rbpOnTuioDataString(VALUE tuioClientObj) //Ruby protected
 // ----------------------------------------------------------------------------
 {//static called from Ruby
 
@@ -256,7 +371,7 @@ VALUE RubyClassHandler::rbpOnTuioData(VALUE tuioClientObj) //Ruby protected
     rc = rb_funcall(tuioClientObj, rb_intern("OnTuioData"), 1, tuioData);
     return rc;
 }
-////// ----------------------------------------------------------------------------
+////// -Testing--------------------------------------------------------------------
 ////VALUE RubyClassHandler::OnTuioData(VALUE self, wxString tuioDataString)
 ////// ----------------------------------------------------------------------------
 ////{//static called from Ruby
@@ -269,6 +384,7 @@ VALUE RubyClassHandler::rbpOnTuioData(VALUE tuioClientObj) //Ruby protected
 ////    #endif
 ////    return (VALUE)FALSE;    //let others process the key also
 ////}
+
 
 // ----------------------------------------------------------------------------
 void RubyClassHandler::ShowRubyError(int error)
@@ -318,6 +434,10 @@ void RubyClassHandler::ShowRubyError(int error)
     #if defined(LOGGING)
     LOGIT( _T("Ruby Error:[%s]"), clog.c_str());
     #endif
+
+    ID method = rb_intern("puts");
+    if (MethodExists(rb_mKernel, _T("puts")))
+        rb_funcall(rb_mKernel, method, 1, rb_str_new2(clog.c_str() ));
 }
 // ----------------------------------------------------------------------------
 VALUE RubyClassHandler::Logit(VALUE self, VALUE stringToLog)
@@ -379,10 +499,80 @@ VALUE RubyClassHandler::GetMousePosition(VALUE self)
     return ary;
 }
 // ----------------------------------------------------------------------------
-VALUE  RubyClassHandler::SendKeyMacro(VALUE self, VALUE rMacroString)
+VALUE RubyClassHandler::GetDisplaySize(VALUE self)
 // ----------------------------------------------------------------------------
 {//static called from Ruby
 
+    // return the display width,height to the caller as a Ruby array.
+    // eg.,  width, height = GetDisplaySize()
+
+    // Called from Ruby
+    // return current display size width height
+
+    #if defined(LOGGING)
+     //LOGIT( _T("RbuyClassHandler::GetDisplaySize called from Ruby") );
+    #endif
+
+    VALUE ary = rb_ary_new2(2);
+
+    int width , height;
+    ::wxDisplaySize(&width, &height);
+    rb_ary_store(ary,0,INT2NUM(width));
+    rb_ary_store(ary,1,INT2NUM(height));
+    return ary;
+}
+// ----------------------------------------------------------------------------
+VALUE RubyClassHandler::GetSketchUpRect(VALUE self)
+// ----------------------------------------------------------------------------
+{//static called from Ruby
+
+    // return a SketchUp rect of x,y,width,height to the caller as a Ruby array.
+    // eg.,  x, y, width, height = GetSketchUpRect()
+
+    // Called from Ruby
+    // return current SketchUp rect
+
+    #if defined(LOGGING)
+     //LOGIT( _T("RbuyClassHandler::GetSketchUpRect called from Ruby") );
+    #endif
+
+    VALUE ary = rb_ary_new2(2);
+    RECT rect;
+    GetWindowRect(g_hWndSketchUp, &rect);
+    rb_ary_store(ary,0,INT2NUM(rect.left));
+    rb_ary_store(ary,1,INT2NUM(rect.top));
+    rb_ary_store(ary,2,INT2NUM(rect.right-rect.left));
+    rb_ary_store(ary,3,INT2NUM(rect.bottom-rect.top));
+    return ary;
+}
+// ----------------------------------------------------------------------------
+VALUE RubyClassHandler::GetSketchUpViewRect(VALUE self)
+// ----------------------------------------------------------------------------
+{//static called from Ruby
+
+    // return a SketchUp view rect of x,y,width,height to the caller as a Ruby array.
+    // eg.,  x, y, width, height = GetSketchUpViewRect()
+
+    // Called from Ruby
+    // return current SketchUp view rect
+
+    #if defined(LOGGING)
+     //LOGIT( _T("RbuyClassHandler::GetSketchUpViewRect called from Ruby") );
+    #endif
+
+    VALUE ary = rb_ary_new2(2);
+    RECT rect;
+    GetWindowRect(g_hWndSketchUpView, &rect);
+    rb_ary_store(ary,0,INT2NUM(rect.left));
+    rb_ary_store(ary,1,INT2NUM(rect.top));
+    rb_ary_store(ary,2,INT2NUM(rect.right-rect.left));
+    rb_ary_store(ary,3,INT2NUM(rect.bottom-rect.top));
+    return ary;
+}
+// ----------------------------------------------------------------------------
+VALUE  RubyClassHandler::SendKeyMacro(VALUE self, VALUE rMacroString)
+// ----------------------------------------------------------------------------
+{//static called from Ruby
 
     // send a Ruby macro string to our macro processor
     // eg., "SendKeyMacro("{LSHIFT DOWN}{MBUTTON DOWN}"
@@ -395,6 +585,7 @@ VALUE  RubyClassHandler::SendKeyMacro(VALUE self, VALUE rMacroString)
     #if defined(LOGGING)
     //LOGIT( _T("RubyClassHandler:SendKeyMacro[%s]"), macroKeys.c_str());
     #endif
+
 
     // Make sure keys go to main window (not Ruby console or other foreground)
     HWND hRubyConsole = ::FindWindow(_T("#32770"), _T("Ruby Console"));
@@ -549,8 +740,12 @@ VALUE RubyClassHandler::SetFocusSketchUp(VALUE self)
 // ----------------------------------------------------------------------------
 //  Example script
 // ----------------------------------------------------------------------------
-//    puts "ClassTest.rb running from " + Dir.getwd
-//    require "MultitouchSu.dll"
+//# ---------------------------------------------
+//# Test plugin to load MultitouchSu.dll
+//# ---------------------------------------------
+//    ##require "sketchup.rb"
+//    require "MultitouchSU.dll"
+//
 //    # ----------------------------------------------------------------------------
 //    class MyTuioClient < TuioClient
 //    # ----------------------------------------------------------------------------
@@ -565,19 +760,50 @@ VALUE RubyClassHandler::SetFocusSketchUp(VALUE self)
 //        #     OnTuioData (called by TuioClient when TUIO data is available)
 //        # ----------------------------------
 //        def OnTuioData( stringOfTuioData )
-//            Logit "FROM RUBY OnTuioData: #{stringOfTuioData}"
-//            puts stringOfTuioData; #write to SketchUp console
+//            ##Logit "FROM RUBY OnTuioData: #{stringOfTuioData}"
+//            ##puts stringOfTuioData; #write to SketchUp console
+//            return true
+//        end
+//
+//        def OnTuioAddObject( symbolID, sessionID, positionX, positionY, angle)
+//            Logit "AddObject: #{symbolID} #{sessionID} #{positionX} #{positionY} #{angle}"
+//            return true
+//        end;
+//
+//        def OnTuioSetObject( symbolID, sessionID, positionX, positionY, angle,
+//                motionSpeed, rotationSpeed, motionAccel, rotationAccel)
+//            Logit "SetObject: #{symbolID} #{sessionID} #{positionX} #{positionY} #{angle} #{motionSpeed} #{rotationSpeed} #{motionAccel} #{rotationAccel}"
+//            return true
+//        end;
+//
+//        def OnTuioDelObject( symbolID, sessionID)
+//            Logit "DelObject: #{symbolID} #{sessionID}";
+//            return true
+//        end;
+//
+//        def OnTuioAddCursor( symbolID, sessionID, positionX, positionY )
+//            Logit "AddCursor: #{symbolID} #{sessionID} #{positionX} #{positionY}"
+//            return true
+//        end
+//
+//        def OnTuioSetCursor( symbolID, sessionID, positionX, positionY, motionSpeed, motionAccel )
+//            Logit "SetCursor: #{symbolID} #{sessionID} #{positionX} #{positionY} #{motionSpeed} #{motionAccel}"
+//            return true
+//        end
+//
+//        def OnTuioDelCursor( symbolID, sessionID)
+//            Logit "DelCursor: #{symbolID} #{sessionID}";
 //            return true
 //        end
 //    end # class MyTuioClient
 //
+//    #end of script
+//    puts " Invoked require MultitouchSu.dll"
 //    # ------------------------------------------------------------------------
-//    # The TuioClient extension will see the next statement and make
+//    # The MultitouchSu.dll Ruby extension will see the next statement and make
 //    # a global reference to "myTuioClient" object class so it lives past
 //    # the termination of this script. Anything outside MyTuioClient class will
 //    # be eaten by the Ruby garbage collector.
 //    # ------------------------------------------------------------------------
-//
 //    myTuioClient = MyTuioClient.new();
 //
-//    #end of script

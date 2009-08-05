@@ -66,15 +66,15 @@ structMtSuTuioData g_MtSuTuioData;
 //  pointer to one and only RubyClass object
 RubyClassHandler* MultitouchSUApp::pRubyClassHandler = 0;
 class HiddenFrame;
-MultitouchSUApp*  pApp = 0;             //"this" pointer for MultitouchSUApp class calls
+MultitouchSUApp* pMultiTouchSuApp = 0;  //"this" pointer for MultitouchSUApp class calls
 HiddenFrame*    pHiddenFrame = 0;       //wxWidgets frame
 Debugging*      pMyLog = 0;             //debugging log
 wxLog*          pOldLog = 0;            //log to restore on exit
 Debugging*      pVersion = 0;           //access to version string
 
     int port = 3333;
-	TuioDump dump;
-	TuioClient client(port);
+        TuioDump dump;
+        TuioClient client(port);
 
 // ----------------------------------------------------------------------------
 // We use IMPLEMENT_APP_NO_MAIN so we can start the app from DllMain
@@ -127,7 +127,7 @@ BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
             // wxTheApp is allocated, we must not return a FALSE
             // or we'll crash during DLL_PROCESS_DETACH
-            if ((not pApp) || (not pApp->DllProcessAttach()) )
+            if ((not pMultiTouchSuApp) || (not pMultiTouchSuApp->DllProcessAttach()) )
             {
                 MessageBox( 0, "MultitouchSU:DLL_PROCESS_ATTACH did not initialize", "MultitouchSU", MB_OK);
                 //return FALSE; <<-- causes crash in DLL_PROCESS_DETACH/wxEntryCleanup()
@@ -184,6 +184,7 @@ extern "C" DLLFUNCTIONS_API void Init_MultitouchSU(void)
 // ----------------------------------------------------------------------------
 {//This routine must remain global extern "C" or it won't get called
 
+
     // This init function is called by Ruby when this Dll is loaded
     // (Ruby calls it an extension).
     // as.../SketchUp/Plugins/MultitouchSU.dll
@@ -218,7 +219,7 @@ MultitouchSUApp::MultitouchSUApp()
 // ----------------------------------------------------------------------------
 {
     //ctor
-    pApp = this;
+    pMultiTouchSuApp = this;
 }
 // ----------------------------------------------------------------------------
 MultitouchSUApp::~MultitouchSUApp()
@@ -235,7 +236,7 @@ bool MultitouchSUApp::OnInit()
     // return true here or the wxApp will exit and we won't cleanup
     // properly when DLL_PROCESS_DETACH is called.
 
-    pApp = this;
+    pMultiTouchSuApp = this;
 
     return true;
 }
@@ -336,11 +337,11 @@ LRESULT CALLBACK NewWndProc(HWND Hwnd, UINT message, WPARAM wParam, LPARAM lPara
 }
     //Doc: WM_COMMAND
     //  Message     wParam      wParam                          lParam
-    //  Source      high word)	(low word)
+    //  Source      high word)  (low word)
     //  ---------   ----------  -----------------------         -------------
-    //  Menu	    0	        Menu identifier (IDM_*)	        0
-    //  Accelerator	1	        Accelerator identifier (IDM_*)	0
-    //  Control	    Control-    Control                         Handle to the
+    //  Menu        0           Menu identifier (IDM_*)         0
+    //  Accelerator     1               Accelerator identifier (IDM_*)  0
+    //  Control     Control-    Control                         Handle to the
     //              defined     identifier                      control window
     //              notification
     //              code
@@ -393,6 +394,7 @@ BOOL CALLBACK MultitouchSUApp::EnumChildWindowsProc( HWND hWnd, LPARAM lParam)
     // Find the first child window w/class AfxFrameOrView. This
     // will be the users drawing window and the one needed to
     // translate screen coordinates to client coordinates.
+
 
     // Look for a window with class name in g_lpszClassToFind.
     // It must share our Pid, ie., be in the same process as this
@@ -498,7 +500,7 @@ wxWindow* MultitouchSUApp::CreateHiddenFrame()
         return 0;
     }
 
-	return pHiddenFrame;
+        return pHiddenFrame;
 }
 // ----------------------------------------------------------------------------
 bool MultitouchSUApp::CreateDebuggingLog()
@@ -511,9 +513,9 @@ bool MultitouchSUApp::CreateDebuggingLog()
     pMyLog = new Debugging(_T("MultitouchSU Dll Log"));
     #if defined(LOGGING)
       LOGIT( "DLL Debug Logging initialized.");
-	#endif
+        #endif
 
-	return TRUE;
+        return TRUE;
 }
 //// ----------------------------------------------------------------------------
 //UINT MultitouchSUApp::PostWxEvent( const UINT Message, const WPARAM wParam, const LPARAM lParam)
@@ -660,6 +662,7 @@ wxString MultitouchSUApp::GetMSWndMenuLabel(const unsigned menuId)
 {
     // Get label from MS window menu item (not wxWindow menu)
 
+
     wxString menuLabel("");
     HMENU hMenu = GetMenu(g_hWndSketchUp);
     int iMenuItemCount = GetMenuItemCount( hMenu );
@@ -719,3 +722,4 @@ wxString MultitouchSUApp::GetMSWndMenuLabel(const unsigned menuId)
     //      HBITMAP   hbmpItem;
     //    } MENUITEMINFO, *LPMENUITEMINFO;
 // ----------------------------------------------------------------------------
+
