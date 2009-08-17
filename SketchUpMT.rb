@@ -68,9 +68,7 @@
         #Move halfway to point
         def move_halfway_toward(entity, target_pt)
             begin
-                current_pt = entity.transformation.origin;
-                halfway = Geom::Point3d.linear_combination(0.5, current_pt, 0.5,
-                    target_pt);
+                
                 # Undo our current transform with inverse,
                 # then move to the halfway point.
                 entity.transform! entity.transformation.inverse;
