@@ -10,28 +10,31 @@ Community: Natural User Inter group www.nuigroup.com
 Users having access to TUIO based multitouch hardwarewould be able to interact/ Draw stuff 
 into Google SketchUp using gestures.
 
-There'll be two main tasks to accomplish
+There are be two prime features being implemented-
 - Camera Movements (Panning/Orbit/Zoom) using Multitouch two finger gesture
-- Drawing using gestures(We're figuring out how it'll work) since most Google SketchUp 
-interactions are single mouse touch way. 
+- Drawing using an IR Pen /WiiMote. 
 										
-Take a Survey at http://tinyurl.com/no7axe and let your suggestions coming in 
+Take a Survey at http://tinyurl.com/no7axe 
 									        
-Current Status: The TUIO data is received within the SketchUp User interface.
-Bugs: The Stack size of Console makes GoogleSU crash on receiving the TUIO messages, 
+Current Status: All the camera motion gestures( Zoom in/out, panning, orbitting) implemented.
+
+Bugs:
+- The Stack size of Console makes GoogleSU crash on receiving the TUIO messages, 
 so we'll use an builtin window using a DLL that displays and logs the receives messages
+- The orbit is sometimes misinterpreted as zoom
 
 ************************
 CURRENT STATUS            //Tasks Completed
 ************************
+- Camera Gestures working (final eval)
 -DLL loading within Sketchup
 -TUIO connection done
 -TUIO logging done
 -UI, IconSet loading from toolbar
 
 ************************
-REAMINING TASK               //To be done by END of August, - priority 1: Currently trying Ruby API camera methods, 
+REAMINING TASK               //To be done by END of August, - priority 1: Currently trying Ruby API camera methods, -DONE (11th July)
 							  priority 2: try the Mouse emulation
 ************************
-- Gestures mapping(Pan, Zoom, Orbit:: Line, Circle, Square::Push Pull objects) -> Hard
-- Mapping each Iconset to Multitouch Methods -> Easy
+- Gestures mapping(Pan, Zoom, Orbit) -> Hard--> DONE
+- Mapping each Iconset to Multitouch Methods -> Easy -> TBD after mode switching works
