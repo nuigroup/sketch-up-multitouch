@@ -1,6 +1,4 @@
-/***************************************************************
   
-*/
 
 #ifndef DEBUGGING_H_INCLUDED
 #define DEBUGGING_H_INCLUDED

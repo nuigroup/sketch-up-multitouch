@@ -33,8 +33,30 @@ CURRENT STATUS            //Tasks Completed
 -UI, IconSet loading from toolbar
 
 ************************
-REAMINING TASK               //To be done by END of August, - priority 1: Currently trying Ruby API camera methods, -DONE (11th July)
+REAMINING TASK               //To be done by END of August, - priority 1: Currently trying Ruby API camera methods, -DONE (on 11th July)
 							  priority 2: try the Mouse emulation
 ************************
 - Gestures mapping(Pan, Zoom, Orbit) -> Hard--> DONE
 - Mapping each Iconset to Multitouch Methods -> Easy -> TBD after mode switching works
+
+
+
+**********************
+Compiling Instructions
+**********************
+
+http://code.google.com/p/sketchupmultitouch/wiki/Compiling
+
+**********************
+Installation Instructions
+**********************
+
+http://code.google.com/p/sketchupmultitouch/wiki/InstallationInstructions
+
+**********************
+Alternate Info
+**********************
+http://code.google.com/p/sketchupmultitouch/wiki/PageName
+http://www.ohloh.net/p/sketchupmt/analyses/latest
+
+

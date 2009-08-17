@@ -2,7 +2,7 @@
 credits info etc.
  **************************************************************/
 /*
-	Lincense tbd
+	License tbd upon mentor's consent
 */
 
 // ----------------------------------------------------------------------------
@@ -171,8 +171,7 @@ BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             #endif
 
             wxTheApp->OnExit();
-            //-wxTheApp->CleanUp(); causes crash deleting objects
-            //-wxEntryCleanup(); causes crash deleting objects
+            
 
         }while(0);
         break;
